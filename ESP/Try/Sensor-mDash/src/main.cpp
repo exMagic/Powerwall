@@ -1,37 +1,29 @@
 #include <Arduino.h>
-
-// Minimal Arduino sketch for mdash.net
-//
-// - Install mDash library:
-//   - Select "Sketch" &rarr; "Include Library" &rarr; "Manage Libraries"
-//   - In the search field, type "mDash" and press Enter
-//   - Click on "Install" to install the library
-// - Select "Tools" → "Board" → "ESP32 Dev Module"
-// - Select "Tools" → "Partitioning Scheme" → "Minimal SPIFFS"
-// - Select "Tools" → "Port" → your serial port
-// - Click on "Upload" button to build and flash the firmware
-//
-// See https://mdash.net/docs/ for the full IoT product reference impementation
-
-#define MDASH_APP_NAME "MinimalApp10"
+#define MDASH_APP_NAME "Powerwall"
 #include <mDash.h>
-
 #include <WiFi.h>
+#include "secrets.h"
 
-// #define WIFI_NETWORK "MyWifiNetworkName"
-// #define WIFI_PASSWORD "MyWifiPassword"
-// #define DEVICE_PASSWORD "mDashDeviceToken"
+const int led = 2;
+unsigned long previousMillis = 0;
+const long interval = 100;
+bool ledState = 0;
 
-#define WIFI_NETWORK "exesp"
-#define WIFI_PASSWORD "placuszki2"
-#define DEVICE_PASSWORD "onKc6iNij4vhttOoCljA0A"
-
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  WiFi.begin(WIFI_NETWORK, WIFI_PASSWORD);
-  mDashBegin(DEVICE_PASSWORD);
+  WiFi.begin(SECRET_SSID, SECRET_PASS);
+  mDashBegin(SECRET_DEVICE_PASSWORD);
+  pinMode(led, OUTPUT);
 }
 
-void loop() {
-  delay(100);
+void loop()
+{
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval)
+  {
+    previousMillis = currentMillis;
+    ledState = not(ledState);
+    digitalWrite(led, ledState);
+  }
 }
