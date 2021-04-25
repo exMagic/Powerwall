@@ -35,7 +35,20 @@ int ampsSensorVal = 0;
 double Voltage = 0;
 double A_Val = 0;
 int ACSoffset = 2500;
-int mVperAmp = 66;
+double mVperAmp = 39.5;
+
+//
+const int numReadings2 = 100;
+int readings2[numReadings2];      // the readings from the analog input
+int readIndex2 = 0;              // the index of the current reading
+int total2 = 0;                  // the running total
+int average2 = 0;                // the average
+
+const int numReadings = 100;
+int readings[numReadings];      // the readings from the analog input
+int readIndex = 0;              // the index of the current reading
+int total = 0;                  // the running total
+int average = 0;                // the average
 ///
 
 // This function is called once everything is connected (Wifi and MQTT)
@@ -56,18 +69,60 @@ void setup()
   pinMode(led, OUTPUT);
   client.enableDebuggingMessages();                              // Enable debugging messages sent to serial output
   client.enableLastWillMessage("vc/test", "I am going offline"); // You can activate the retain flag by setting the third parameter to true
+
+  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+    readings[thisReading] = 0;
+  }
 }
 
 void loop()
 {
   client.loop();
-  voltageSensorVal = analogRead(VPin);
+
+  // subtract the last reading:
+  total2 = total2 - readings2[readIndex2];
+  // read from the sensor:
+  readings2[readIndex2] = analogRead(VPin);
+  // add the reading to the total:
+  total2 = total2 + readings2[readIndex2];
+  // advance to the next position in the array:
+  readIndex2 = readIndex2 + 1;
+  // if we're at the end of the array...
+  if (readIndex2 >= numReadings2) {
+    // ...wrap around to the beginning:
+    readIndex2 = 0;
+  }
+  // calculate the average:
+  average2 = total2 / numReadings2;
+  ////voltageSensorVal = analogRead(VPin);
+  voltageSensorVal = average2;
   vOut = (voltageSensorVal / 4095) * vCC;
   V_Val = vOut * factor + 0.6;
 
-  ampsSensorVal = analogRead(Apin);
+  
+  // subtract the last reading:
+  total = total - readings[readIndex];
+  // read from the sensor:
+  readings[readIndex] = analogRead(Apin);
+  // add the reading to the total:
+  total = total + readings[readIndex];
+  // advance to the next position in the array:
+  readIndex = readIndex + 1;
+  // if we're at the end of the array...
+  if (readIndex >= numReadings) {
+    // ...wrap around to the beginning:
+    readIndex = 0;
+  }
+  // calculate the average:
+  average = total / numReadings;
+  //// ampsSensorVal = analogRead(Apin); //raw value
+  ampsSensorVal = average; //average value
   Voltage = (ampsSensorVal / 4095.0) * 3300;
   A_Val = ((Voltage - ACSoffset) / mVperAmp);
+  A_Val = (A_Val)*-1-24.52;
+
+
+
 
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval)
@@ -75,6 +130,6 @@ void loop()
     previousMillis = currentMillis;
     ledState = not(ledState);
     digitalWrite(led, ledState);
-    client.publish("vc", String(V_Val) + "," + String(A_Val));
+    client.publish("vc", String(V_Val) + "," + String(A_Val) + " rv:" + String(analogRead(Apin)) + " av:" + String(average));
   }
 }
