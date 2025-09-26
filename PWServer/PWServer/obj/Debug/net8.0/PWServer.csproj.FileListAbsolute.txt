@@ -31,3 +31,5 @@
 /src/obj/Debug/net8.0/PWServer.pdb
 /src/obj/Debug/net8.0/PWServer.genruntimeconfig.cache
 /src/obj/Debug/net8.0/ref/PWServer.dll
+/src/bin/Debug/net8.0/Dapper.dll
+/src/bin/Debug/net8.0/Npgsql.dll
