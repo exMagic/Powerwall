@@ -1,0 +1,6 @@
+@PWServer_HostAddress = http://localhost:5051
+
+GET {{PWServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

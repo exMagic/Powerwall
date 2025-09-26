@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  pwserver:
+    build:
+      context: ./PWServer
+      dockerfile: Dockerfile
+      target: build
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    volumes:
+      - ./PWServer:/src
+    networks:
+      - pwserver-network
+    command: ["dotnet", "watch", "run", "--project", "/src/PWServer.csproj", "--urls", "http://+:8080"]
+
+networks:
+  pwserver-network:
+    driver: bridge
